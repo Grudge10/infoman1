@@ -16,3 +16,9 @@ After creating all six tables, I executed a `SHOW TABLES;` command to ensure tha
 \*The only discrepancy between the description of the owner table and its actual realization is that the column phone_number has type int. It is a result of the intentional error made for Task 5, which is later corrected with an ALTER TABLE statement.
 
 In general, every primary key, foreign key (denoted by MUL in the DESCRIBE results), data type, and composite key from the Week 3 schema is present in the actual MySQL database. There were no unexpected discrepancies between the design and the implementation except for the purposeful phone_number error in Task 5.
+
+## Task 5 — Deliberate Mistake, Diagnosis & Correction
+
+* **The mistake:** In the initial CREATE TABLE owner, the field phone_number was defined as INT. As warned in the Week 4 handout, phone_number should not be defined as INT because it silently drops leading zeros and cannot accommodate special characters such as +, -, and spaces.
+* **How DESCRIBE revealed it:** Running DESCRIBE owner; (see screenshots/task5_describe_before.png) showed that the Type column for phone_number is `int`, confirming that the table had originally been created with the wrong data type.
+* **The correction:** Executing the query `ALTER TABLE owner MODIFY COLUMN phone_number VARCHAR(15) NOT NULL;` fixed the error. Running DESCRIBE owner; once again (see screenshots/task5_describe_after.png) reveals that the Type column for phone_number is now `varchar(15)`, meaning the column can store up to 15 characters, including leading zeros and symbols like '+' or '-'.

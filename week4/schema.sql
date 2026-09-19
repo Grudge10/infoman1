@@ -51,3 +51,9 @@ CREATE TABLE vaccination_record (
     PRIMARY KEY (pet_id, vaccine_name, vaccination_date),
     FOREIGN KEY (pet_id) REFERENCES pet(pet_id)
 );
+
+-- TASK5
+DESCRIBE owner;
+
+ALTER TABLE owner MODIFY COLUMN phone_number VARCHAR(15) NOT NULL;
+DESCRIBE owner;
