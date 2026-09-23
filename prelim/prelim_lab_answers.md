@@ -1,0 +1,5 @@
+# INFOMAN1 Prelim Lab Exam: Answers
+
+## Task 1: Conceptual ERD Notes
+
+The conceptual ERD in task1_conceptual_erd.drawio and its PNG export depicts four entities, namely MEMBER, TOOL, CERTIFICATION, and STORAGE_LOCATION, with underlined key attributes, connected with four verb-labeled diamonds. The borrows, requires, and completes relationships are many-to-many with the circle and crow’s foot on both ends due to the optional participation, whereas stores is one-to-many with mandatory one at the location end and a circle and crow’s foot at the tool end to signify the total participation of tools. The relationship attributes borrow_date, return_date, and completion_date are attached to the diamonds as they are left unresolved since junction tables belong to the logical model. The composite, multivalued, and derived attributes are absent as names are atomic, certification is an entity rather than a repeated attribute of tool, and the on-loan state of tools is stored as NULL return_date instead of deriving it.
