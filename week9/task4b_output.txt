@@ -1,0 +1,5 @@
+buyer	item	line_total
+Dan Reyes	Siomai Rice	65.00
+Ana Cruz	Burger Steak	89.00
+Ana Cruz	Iced Tea	30.00
+Ana Cruz	Siomai Rice	130.00

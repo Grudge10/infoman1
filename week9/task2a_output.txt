@@ -1,0 +1,6 @@
+student_name	program	order_id	order_date
+Ana Cruz	BSIT	102	2026-08-15
+Ana Cruz	BSIT	101	2026-08-10
+Ben Lim	BSCS	NULL	NULL
+Cara Yu	BSIS	NULL	NULL
+Dan Reyes	BSIT	103	2026-08-16

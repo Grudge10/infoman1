@@ -1,0 +1,5 @@
+student_name	program	order_id	item_name	quantity	price	line_total
+Ana Cruz	BSIT	101	Iced Tea	1	30.00	30.00
+Ana Cruz	BSIT	101	Siomai Rice	2	65.00	130.00
+Ana Cruz	BSIT	102	Burger Steak	1	89.00	89.00
+Dan Reyes	BSIT	103	Siomai Rice	1	65.00	65.00
