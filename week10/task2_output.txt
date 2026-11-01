@@ -1,0 +1,6 @@
+product_id	product_name	sku	price	stock_quantity	status
+6	Scientific Calculator	CALC-SCI-001	850.00	20	Active
+product_id	product_name	sku	price	stock_quantity	status
+6	Scientific Calculator	CALC-SCI-001	875.00	20	Active
+product_id	product_name	sku	price	stock_quantity	status
+5	Eraser	ER-001	10.00	200	Active
