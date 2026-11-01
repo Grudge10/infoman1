@@ -1,0 +1,6 @@
+d01_row_count
+3
+student_id	student_name	enrolled_courses	course_id	course_title	dept_id	department_name	grade
+NULL	NULL	NULL	IT103	Intro to Networks	D01	Computing Studies	NULL
+student_id	student_name	enrolled_courses	course_id	course_title	dept_id	department_name	grade
+101	Ana Cruz	IT101, IT102	IT102	Web Development	D01	Computing Studies	1.25
