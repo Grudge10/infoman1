@@ -1,1 +1,3 @@
-ERROR 1048 (23000) at line 6: Column 'product_name' cannot be null
+ERROR 1048 (23000) at line 1: Column 'product_name' cannot be null
+ERROR 1062 (23000) at line 1: Duplicate entry 'NB-001' for key 'products.sku'
+ERROR 3819 (HY000) at line 1: Check constraint 'chk_price' is violated.
