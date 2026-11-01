@@ -1,0 +1,14 @@
+employee	manager
+Lea Ramos	NULL
+Carlo Reyes	Lea Ramos
+Dana Cruz	Lea Ramos
+color_name	size_name
+Red	L
+Green	L
+Blue	L
+Red	M
+Green	M
+Blue	M
+Red	S
+Green	S
+Blue	S
