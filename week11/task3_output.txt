@@ -1,0 +1,4 @@
+student_name	course_title	department_name	grade
+Ana Cruz	Database Systems	Computing Studies	1.50
+Ana Cruz	Web Development	Computing Studies	1.25
+Ben Lim	Database Systems	Computing Studies	1.75
