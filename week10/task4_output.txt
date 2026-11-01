@@ -1,0 +1,1 @@
+ERROR 1048 (23000) at line 6: Column 'product_name' cannot be null
