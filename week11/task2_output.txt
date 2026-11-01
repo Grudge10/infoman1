@@ -1,0 +1,4 @@
+student_id	student_name	course_id	course_title	dept_id	department_name	grade
+101	Ana Cruz	IT101	Database Systems	D01	Computing Studies	1.50
+101	Ana Cruz	IT102	Web Development	D01	Computing Studies	1.25
+102	Ben Lim	IT101	Database Systems	D01	Computing Studies	1.75
