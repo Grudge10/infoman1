@@ -1,0 +1,5 @@
+product_id	product_name	sku	price	stock_quantity	status
+6	Scientific Calculator	CALC-SCI-001	850.00	20	Active
+product_id	product_name	sku	price	stock_quantity	status
+7	Compass	CMP-001	120.00	50	Active
+ERROR 1366 (HY000) at line 6: Incorrect decimal value: 'expensive' for column 'price' at row 1
