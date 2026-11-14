@@ -72,4 +72,3 @@ SELECT * FROM venues WHERE venue_code = 'V-TEMP';
 -- Rejected insert (negative ticket price)
 INSERT INTO bookings (event_id, session_code, booking_date, ticket_category, ticket_price, tickets_booked)
 VALUES (101, 'SESS-BAD', '2025-04-25', 'Standard', -100.00, 1);
--- ERROR 3819 (HY000): Check constraint 'chk_ticket_price' is violated.
