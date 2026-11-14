@@ -1,6 +1,6 @@
 USE eventhub_midterm;
 
--- 1. Lossless Multi-Table INNER JOIN
+-- Task 5.1: Multi-table INNER JOIN
 SELECT e.event_title,
        o.organizer_name,
        v.venue_name,
@@ -13,7 +13,7 @@ INNER JOIN venues v ON e.venue_code = v.venue_code
 INNER JOIN organizers o ON e.organizer_id = o.organizer_id
 ORDER BY b.booking_id;
 
--- 2. Outer Join Missing-Record Diagnostic (unbooked venues)
+-- Task 5.2: Unbooked venues (LEFT JOIN with IS NULL)
 SELECT v.venue_code,
        v.venue_name,
        v.venue_city,
@@ -23,7 +23,7 @@ LEFT JOIN events e ON v.venue_code = e.venue_code
 LEFT JOIN bookings b ON e.event_id = b.event_id
 WHERE b.booking_id IS NULL;
 
--- 3A. Version A (Flawed WHERE filter - silent inner join trap)
+-- Task 5.3 Version A (LEFT JOIN with WHERE - the broken one)
 SELECT v.venue_code,
        v.venue_name,
        b.booking_id,
@@ -35,7 +35,7 @@ LEFT JOIN events e ON v.venue_code = e.venue_code
 LEFT JOIN bookings b ON e.event_id = b.event_id
 WHERE b.ticket_category = 'VIP';
 
--- 3B. Version B (Correct ON condition - preserves all venues)
+-- Task 5.3 Version B (LEFT JOIN with ON - keeps all venues)
 SELECT v.venue_code,
        v.venue_name,
        b.booking_id,

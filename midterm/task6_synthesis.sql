@@ -16,9 +16,9 @@ SELECT venue_code, venue_name, venue_status
 FROM venues
 WHERE venue_code = 'V-PARK';
 
--- Constraint check test (kept commented so script runs cleanly)
--- UPDATE venues SET venue_status = 'CLOSED' WHERE venue_code = 'V-PARK';
--- Error: ERROR 3819 (HY000): Check constraint 'chk_venue_status' is violated.
+-- Rejected update (invalid status)
+UPDATE venues SET venue_status = 'CLOSED' WHERE venue_code = 'V-PARK';
+-- ERROR 3819 (HY000): Check constraint 'chk_venue_status' is violated.
 
 SELECT v.venue_name,
        v.venue_city,
