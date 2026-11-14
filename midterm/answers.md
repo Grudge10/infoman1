@@ -10,12 +10,12 @@
 ## Task 1: Normalization Audit & 3NF Decomposition
 
 ### Approach
-I started by loading `eventhub_seed.sql` into MySQL and running `SELECT * FROM event_booking_flat` so I could inspect all 7 rows side by side. Right away, I noticed that `speaker_list` held comma-separated names and that venue and organizer details were repeated on multiple rows. I mapped out the functional dependencies first, then cleaned up the schema step by step: 1NF to make every column atomic, 2NF to pull out attributes that only depended on part of a key, and 3NF to move out attributes that depended on other non-key columns like `venue_code` and `organizer_id`.
+I started by loading `eventhub_seed.sql` into MySQL and ran a `SELECT * FROM event_booking_flat` query to view all 7 rows. I immediately saw that the `speaker_list` field was using commas to separate the values and that the venue and organiser details were duplicated. I noted the functional dependencies and normalised to 1NF to ensure all the columns were atomic, 2NF to remove any attributes that depend on a partial key and 3NF to remove any attributes that depend on non-key attributes such as `venue_code` and `organizer_id`.
 
 ### 1. Data Anomalies in `event_booking_flat`
-- **Update Anomaly:** `V-METRO` (`Metro Tech Auditorium`, `Quezon City`, capacity `300`) appears in 3 separate rows (`101 / SESS-A1`, `101 / SESS-A2`, and `103 / SESS-A1`). If the auditorium gets renovated and its capacity increases to `350`, we have to update all 3 rows together. Missing even one row leaves two different capacities stored for the same venue. The same issue happens for `V-BAY` (2 rows) and `V-PARK` (2 rows), and for organizers like `Green Earth Initiative` (2 rows).
-- **Insertion Anomaly:** Because the primary key is `(booking_id, session_code)` and `booking_date`, `event_title`, and `organizer_id` are all `NOT NULL`, we cannot register a new partner venue like `V-CAMPUS` (`University Amphitheater`) until an event booking exists for it, unless we insert fake placeholder booking details.
-- **Deletion Anomaly:** Row `(103, 'SESS-A1')` is the only row containing `organizer_id = 3` (`Innovate Campus Lab`, `lead@innovatecampus.edu`) and the speaker `Ms. Lim`. If that single booking gets cancelled and deleted, we lose the organizer's record and contact email completely from the database.
+- **Update Anomaly:** The venue `'V-METRO'` (capacity 300) is listed in three rows (`101/SESS-A1`, `101/SESS-A2`, `103/SESS-A1`). Therefore, if it is renovated to increase the capacity to 350, all three rows must be updated. If any of the rows are not updated, this will cause a discrepancy as there will be two different capacities for the same venue. This also occurs for the venues `'V-BAY'`, `'V-PARK'` and for partners such as `'Green Earth Initiative'` which both have two rows.
+- **Insertion Anomaly:** As the primary key is made up of `(booking_id, session_code)` and `booking_date`, `event_title` and `organizer_id` are all set to `NOT NULL`, we cannot add a new partner venue such as `'V-CAMPUS'` (University Amphitheater) without having an existing event booking, unless dummy data is inserted for the booking.
+- **Deletion Anomaly:** The row `(103, 'SESS-A1')` is the only row that contains the data for (`organizer_id` 3) `'Innovate Campus Lab'` (`lead@innovatecampus.edu`) and speaker Ms. Lim. If this one booking is cancelled/deleted then we will lose the record of the organizer and their contact email altogether.
 
 ### 2. Functional Dependencies
 - `(booking_id, session_code) -> booking_date, event_title, organizer_id, venue_code, ticket_category, ticket_price, tickets_booked`
@@ -26,9 +26,9 @@ I started by loading `eventhub_seed.sql` into MySQL and running `SELECT * FROM e
 - `(booking_id, session_code)` + `speaker_id` is many-to-many (each session booking can have multiple speakers, and a speaker like `Dr. Perez` or `Dr. Aquino` appears across multiple sessions)
 
 ### 3. Normalization Progression
-- **First Normal Form (1NF):** In `event_booking_flat`, `speaker_list` breaks atomicity by storing values like `'Dr. Perez, Engr. Cruz'` in one cell. To reach 1NF, I removed `speaker_list` from the bookings rows so every cell holds a single value, and gave speakers their own table `speakers(speaker_id, speaker_name)` linked to bookings through a junction table `session_speakers(booking_id, speaker_id)`. I also gave each session booking row its own unique surrogate primary key `booking_id` (since the seed table used `(booking_id, session_code)` where `101` was shared by two sessions of the same event).
-- **Second Normal Form (2NF):** In the original flat key `(booking_id, session_code)`, columns like `booking_date`, `event_title`, `organizer_id`, `organizer_name`, `organizer_email`, `venue_code`, `venue_name`, `venue_city`, and `venue_capacity` described the overall event booking rather than a specific session line like `SESS-A1` or `SESS-A2`. Moving event-level attributes into an `events` table keyed by `event_id` (carrying the original event IDs `101` to `106`) ensures that session-specific columns (`session_code`, `booking_date`, `ticket_category`, `ticket_price`, `tickets_booked`) belong in `bookings` and depend on the full primary key `booking_id`.
-- **Third Normal Form (3NF):** In `events`, `organizer_name` and `organizer_email` depend on `organizer_id`, while `venue_name`, `venue_city`, and `venue_capacity` depend on `venue_code` instead of directly on `event_id`. I split those out into `organizers` and `venues`, leaving only `organizer_id` and `venue_code` as foreign keys in `events`. Now every non-key attribute depends solely on its own table's primary key.
+- **First Normal Form (1NF):** The `speaker_list` attribute within the `event_booking_flat` table violates atomicity as we have multiple values within a single cell (i.e. `Dr. Perez, Engr. Cruz`). To resolve this, I removed the `speaker_list` attribute from the `bookings` table. This means there is only one value in each cell. I created a new table called `speakers` with the format `(speaker_id, speaker_name)` that can be joined to `bookings` using a bridge table called `session_speakers (booking_id, speaker_id)`. Each row within the session bookings table also has a unique surrogate key called `booking_id` (the seed table had multiple bookings with the same `booking_id` 101).
+- **Second Normal Form (2NF):** Within the original flat key structure `(booking_id, session_code)` we have columns that describe the event booking as a whole. These are: `booking_date`, `event_title`, `organizer_id`, `organizer_name`, `organizer_email`, `venue_code`, `venue_name`, `venue_city` and `venue_capacity`. By moving these event attributes into a separate table called `events`, keyed by `event_id` (which contain the original event IDs 101-106), this will ensure our session columns (`session_code`, `booking_date`, `ticket_category`, `ticket_price`, `tickets_booked`) are within `bookings` and are dependent on the full primary key `booking_id`.
+- **Third Normal Form (3NF):** The `events` table contains transitive dependencies as the `organizer_name` and `organizer_email` are dependent on the `organizer_id`. The `venue_name`, `venue_city` and `venue_capacity` are dependent on the `venue_code`. By creating two new tables (`organizers` and `venues`), only the `organizer_id` and `venue_code` will remain as foreign keys. This means all non-key attributes are functionally dependent solely on their own table's primary key.
 
 ### 4. Final Relational Schema Notation
 ```text
@@ -55,14 +55,14 @@ From `event_booking_flat` (`eventhub_seed.sql`):
 ### Reflection
 Why does the many-to-many relationship between sessions and speakers require a junction table instead of another column?
 
-Adding extra columns like `speaker_1` and `speaker_2` creates a repeating group that violates 1NF and breaks as soon as a session invites a third speaker. A junction table (`session_speakers`) stores one `(booking_id, speaker_id)` pair per row, so a session can have any number of speakers and the same speaker (`Dr. Perez`, `Engr. Cruz`, `Prof. Santos`, `Dr. Aquino`) can be linked to multiple sessions without duplicating their name.
+Extra columns like `speaker_1` and `speaker_2` would cause a repeating group thus violating 1NF. This would break if there were more than two speakers invited into a session. To overcome this, a Junction Table has been created called `session_speakers`. This allows multiple speakers to be attached to a session (one `booking_id` and `speaker_id` per row). This also allows speakers (Dr. Perez, Engr. Cruz, Prof. Santos, Dr. Aquino) to be attached to multiple sessions without duplicating their name.
 
 ---
 
 ## Task 2: DDL Implementation with Constraints
 
 ### Approach
-I implemented the 6 tables in `task2_schema_ddl.sql` using `VARCHAR` for codes, names, emails, and categories, `INT` for IDs and counts, `DATE` for `booking_date`, and `DECIMAL(8,2)` for `ticket_price` so currency amounts stay exact. I created parent tables (`venues`, `organizers`, `speakers`) before child tables (`events`, `bookings`, `session_speakers`) so every `FOREIGN KEY` resolves cleanly. I added `NOT NULL` on all required fields, `UNIQUE (organizer_email)` on `organizers`, `DEFAULT 'CONFIRMED'` on `booking_status`, and `CHECK` constraints (`venue_capacity > 0` and `ticket_price >= 0.00`) to stop bad data at the database level.
+When creating the 6 tables in `task2_schema_ddl.sql`, appropriate datatypes were used. `VARCHAR` was used for code, name, email and category. `INT` for id and count. `DATE` for `booking_date`. And `DECIMAL(8,2)` for `ticket_price` so that money is accurately represented. The parent tables were created first (`venues`, `organizers`, `speakers`) followed by the child tables (`events`, `bookings`, `session_speakers`). This means all `FOREIGN KEY`s are properly resolved. Constraints were also added. All required fields had `NOT NULL`. The email field in the `organizers` table had `UNIQUE`. Default values were applied to `booking_status` so it will always be `'CONFIRMED'`. The `venue_capacity` and `ticket_price` fields have `CHECK` constraints to ensure `venue_capacity > 0` and `ticket_price >= 0.00`.
 
 ### Code / Query Used
 Full script is in [`task2_schema_ddl.sql`](task2_schema_ddl.sql). Summary of tables and guardrails created:
@@ -200,14 +200,14 @@ DESCRIBE session_speakers;
 ### Reflection
 Which table in your schema needed a composite primary key, and why?
 
-`session_speakers` needed a composite primary key on `(booking_id, speaker_id)` because it is the junction table connecting `bookings` and `speakers`. Neither `booking_id` nor `speaker_id` is unique on its own inside `session_speakers` (one session booking can have two speakers, and one speaker can speak at multiple sessions), so combining both foreign keys uniquely identifies each link and stops duplicate pairings of the same speaker to the same session.
+The composite primary key of `(booking_id, speaker_id)` is required in `session_speakers` as this is the linking table between `bookings` and `speakers`. Each individual field is not unique within the table as there can be two speakers per session booking, and each speaker can speak during multiple sessions. Therefore using both foreign keys as a composite primary key ensures that each relationship is unique as you cannot have duplicate speaker relationships to the same session.
 
 ---
 
 ## Task 3: Data Migration & Safe DML Operations
 
 ### Approach
-To migrate the data cleanly without losing anything, I used `INSERT INTO ... SELECT DISTINCT` from `event_booking_flat` to load `venues`, `organizers`, and `events` first, then inserted the 7 session rows into `bookings` ordered by `(booking_id, session_code)`. Next, I inserted the 7 unique speaker names into `speakers` and mapped each of the 11 `(booking_id, speaker_id)` pairs into `session_speakers` so comma-separated entries like `'Dr. Perez, Engr. Cruz'` became two separate atomic rows. After adding `'V-CAMPUS'`, I followed the 4-step Safe Change Loop for both the 10% ticket price update and the `V-TEMP` delete, and tested `chk_ticket_price` with a negative price.
+To ensure that the data moved cleanly, the first 3 tables were populated via `INSERT INTO ... SELECT DISTINCT` from the `event_booking_flat` table. The 7 sessions were then added to the `bookings` table in order of `booking_id` and `session_code`. The 7 unique speaker names were added to the `speakers` table. Each of the 11 unique pairs for `booking_id` and `speaker_id` were added to the `session_speakers` table. This converted the comma separated values into atomic values. Adding of `'V-CAMPUS'` was performed. The Safe Change Loop was applied to the updating of the ticket price by 10% and deletion of `V-TEMP`. The `chk_ticket_price` constraint was tested with a negative value for price.
 
 ### Code / Query Used
 Full script is in [`task3_dml_operations.sql`](task3_dml_operations.sql). Migration and `'V-CAMPUS'` insert:
@@ -325,14 +325,14 @@ VALUES ('V-CAMPUS', 'University Amphitheater', 'Quezon City', 500);
 ### Reflection
 Why is the `DELETE` targeted by primary key rather than by venue name?
 
-Targeting by primary key (`venue_code = 'V-TEMP'`) guarantees only that exact record is matched because primary keys are unique. If you filter by `venue_name` instead, two venues with similar or identical names could accidentally get deleted at once, or a small spelling mismatch could make the `DELETE` miss the row completely.
+By using the primary key (`venue_code`) we can be certain we are only deleting the correct record. This is because primary keys are unique. If we were to search on `venue_name` we could accidentally `DELETE` 2 records with similar / same names. A misspelling could also cause us not to `DELETE` the record at all.
 
 ---
 
 ## Task 4: Filtering, Functions & Aggregate Analytics
 
 ### Approach
-All 4 queries are saved in [`task4_analytics.sql`](task4_analytics.sql). For Query 1, I wrapped the `OR` condition in parentheses so SQL would not evaluate `AND` before `OR` and leak rows outside the April 10 to April 20 date range. For Query 2, I joined `bookings`, `events`, and `organizers` so I could pull `organizer_name` and `organizer_email` into `CONCAT()` and compute `DATEDIFF('2025-05-01', b.booking_date)` with a positive day count. For Query 3, I used `LIKE '%City'` and `LIKE 'M%'` on `venue_city`. For Query 4, I grouped by `ticket_category` and used `HAVING SUM(tickets_booked) >= 5` after aggregation.
+All four queries are stored within [`task4_analytics.sql`](task4_analytics.sql). To ensure that the `AND` condition does not get evaluated prior to the `OR` condition causing any rows which are outside the April 10 to April 20 timeframe, I put the `OR` statement within parentheses. For query two, I had to inner join multiple tables (`bookings`, `events`, `organizers`) to include the columns of the organizers in the concatenation function. I also added in `DATEDIFF('2025-05-01', b.booking_date)` to give a positive number of days. For query three, I used the `LIKE` statements using `%City` and `M%`. Finally, for query four I grouped by the `ticket_category` and used `HAVING SUM(tickets_booked) >= 5`.
 
 ### Query 1: Compound Logical Filtering with Precedence
 **SQL Query:**
@@ -422,14 +422,14 @@ HAVING SUM(tickets_booked) >= 5;
 ### Reflection
 Why does Query 4 filter with `HAVING` instead of `WHERE`?
 
-Because `WHERE` runs on individual rows before `GROUP BY` groups them together, so aggregate totals like `SUM(tickets_booked)` do not exist yet when `WHERE` executes. Putting `SUM(tickets_booked) >= 5` inside `WHERE` throws a syntax/invalid-use error, whereas `HAVING` runs after `GROUP BY` and filters out groups like `VIP` (which only has 3 total tickets booked).
+The `WHERE` clause is applied to individual rows. This means that aggregate functions such as `SUM(tickets_booked)` do not exist yet and you will get an invalid use of syntax error. The `HAVING` clause is used after the `GROUP BY` clause. We can filter out groups like VIP which only have 3 tickets booked in total.
 
 ---
 
 ## Task 5: Multi-Table Joins & Outer Join Diagnostics
 
 ### Approach
-All queries for this task are in [`task5_joins.sql`](task5_joins.sql). For the lossless report, I started from `bookings` and joined `events` on `event_id`, then joined `venues` on `venue_code` and `organizers` on `organizer_id` using table aliases `b`, `e`, `v`, and `o`. For the unbooked venue check and the VIP diagnostic, I started from `venues` on the left so venues with no events or bookings would be preserved before applying `IS NULL` or the `ON` condition.
+All queries are in the file [`task5_joins.sql`](task5_joins.sql). For the lossless join report I joined on `event_id` (from `bookings`), `venue_code` (from `venues`) and `organizer_id` (from `organizers`). I used table aliases of `b`, `e`, `v`, `o`. For the unbooked venue and VIP diagnosis, I started my query with `venues` on the left so that any venues without events/bookings would remain. This way the `IS NULL` or `ON` condition could be applied.
 
 ### 1. Multi-Table INNER JOIN
 **SQL Query:**
@@ -536,19 +536,19 @@ WHERE b.booking_id IS NULL;
   All 4 venues (`V-BAY`, `V-CAMPUS`, `V-METRO`, `V-PARK`) stay in the result set, with `NULL` values shown where an event or venue has no VIP booking.
 
 - **Technical Explanation:**
-  `LEFT JOIN` builds the joined rows first and fills unmatched right-side columns (like `b.ticket_category` for `V-CAMPUS`) with `NULL`. When `WHERE b.ticket_category = 'VIP'` runs afterwards, it checks the final paired rows, and since `NULL = 'VIP'` never evaluates to true (it evaluates to `UNKNOWN`), `WHERE` drops all unmatched and non-VIP rows. That silently turns the `LEFT JOIN` into an `INNER JOIN`. Placing `AND b.ticket_category = 'VIP'` inside the `ON` clause restricts which right-side rows match during the join step while still preserving every left-side venue row.
+  `LEFT JOIN` creates joined rows but will result in `NULL` values for any columns in the right table that are not matched (`b.ticket_category` in this case for `V-CAMPUS`). The `WHERE` is then applied to the final joined rows. As there are no instances where `NULL` will equal `'VIP'` it will remove all unmatched rows and rows where `ticket_category` is not `'VIP'`. This will effectively turn your `LEFT JOIN` into an `INNER JOIN`. By including `AND b.ticket_category = 'VIP'` in your `ON` statement you can filter the right table rows to only those where `ticket_category` is `'VIP'` whilst keeping all the left table (`venues`) rows.
 
 ### Reflection
 Why is `= NULL` the wrong way to find unbooked venues, and what is the correct test?
 
-In SQL, `NULL` represents an unknown value, so comparing `b.booking_id = NULL` always evaluates to `UNKNOWN` (never true) and returns zero rows. The correct operator is `IS NULL` (written as `WHERE b.booking_id IS NULL`), which specifically checks whether the column has no value.
+`NULL` means unknown in SQL so when you do `b.booking_id = NULL` you will always get an `UNKNOWN` result. This means that no records would be found. We need to use the `IS NULL` operator instead. So we should use: `WHERE b.booking_id IS NULL`.
 
 ---
 
 ## Task 6: Schema Evolution & Cross-Week Synthesis
 
 ### Approach
-In [`task6_synthesis.sql`](task6_synthesis.sql), I evolved the `venues` table using `ALTER TABLE` to add `venue_status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'` along with a `CHECK` constraint restricting values to `'ACTIVE'`, `'RENOVATION'`, or `'INACTIVE'`. After updating `V-PARK` to `'RENOVATION'` using its primary key and confirming that `'CLOSED'` gets rejected, I wrote the synthesis query joining `venues`, `events`, and `bookings` with `WHERE`, `GROUP BY`, `HAVING`, and `ORDER BY` together.
+I modified the `venues` table within [`task6_synthesis.sql`](task6_synthesis.sql) using the `ALTER TABLE` statement with an additional column added (`venue_status`). This had a default value of `'ACTIVE'` and only allowed `'ACTIVE'`, `'RENOVATION'` or `'INACTIVE'` statuses. I updated the `V-PARK` record to `'RENOVATION'` using its primary key and checked that it would not allow `'CLOSED'`. I then created my synthesis query, joining the 3 tables: `venues`, `events` and `bookings`, using `WHERE`, `GROUP BY`, `HAVING` and `ORDER BY` clauses.
 
 ### 1. ALTER TABLE Statement & Status Constraint
 ```sql
@@ -620,7 +620,7 @@ ORDER BY total_revenue DESC;
 ### Reflection
 Why does adding `NOT NULL DEFAULT 'ACTIVE'` succeed on a table that already holds rows?
 
-Because MySQL automatically fills in the `DEFAULT` value (`'ACTIVE'`) for all existing rows when adding the new column. Since every row gets `'ACTIVE'` right away, none of them contain `NULL`, so the `NOT NULL` constraint is satisfied immediately without throwing an error.
+MySQL will automatically assign a `DEFAULT` value of (in this case `'ACTIVE'`) to all existing records. This means each record will have a value of `'ACTIVE'` assigned immediately, therefore there will be no `NULL` values and the `NOT NULL` constraint will also be satisfied without any errors.
 
 ---
 
@@ -644,8 +644,8 @@ Because MySQL automatically fills in the `DEFAULT` value (`'ACTIVE'`) for all ex
 ### Concluding Reflection
 1. What was the most significant challenge when decomposing the unnormalized flat table into 3NF, and how did separating entities improve data integrity?
    
-   The trickiest part was figuring out the grain of the flat table in Task 1 and 2NF: `event_booking_flat` used `(booking_id, session_code)` where event `101` had two sessions (`SESS-A1` and `SESS-A2`), while `speaker_list` held comma-separated names inside each session row. Splitting `events` from `bookings` and putting speakers into `speakers` plus `session_speakers` made every row clean and atomic. After separating `venues` and `organizers`, adding `V-CAMPUS` in Task 3 or marking `V-PARK` as `'RENOVATION'` in Task 6 only touched one row instead of needing multiple edits across repeated booking records, and constraints like `UNIQUE (organizer_email)` and `chk_ticket_price` kept invalid values out completely.
+   The most difficult aspect of this task was determining the grain of the flat table in Tasks 1 and 2NF. This meant that the table `event_booking_flat` had a composite key of `booking_id` and `session_code`. For event 101 there were two sessions (`SESS-A1` and `SESS-A2`). The column `speaker_list` also had a list of names stored as a comma separated string. By separating the `events` and `bookings` tables, and separating the speakers into `speakers` and `session_speakers`, this ensured all data was in its simplest form. With the separation of `venues` and `organizers` we could easily update the venues table to include `V-CAMPUS`, or note that `V-PARK` was under renovation by simply changing one row of data. The `UNIQUE` constraint was applied to `organizer_email` and the constraint `chk_ticket_price` ensured invalid data couldn't be entered.
 
 2. What are the practical performance tradeoffs between keeping a single flat table versus querying multiple normalized tables using `JOIN`s in a high-traffic production environment?
    
-   A single flat table like `event_booking_flat` lets you read everything with a quick `SELECT` without joining tables, which can feel faster for read-heavy dashboards. However, writes become slow and risky because updating one venue's capacity or status requires locking and updating dozens or thousands of repeated rows, and duplicated strings waste storage and cache memory. Normalized 3NF tables like our 6-table schema keep writes fast and consistent on single rows, at the cost of having to run multi-table `JOIN`s (like in Task 5 and Task 6) on read queries. In production, you usually keep the main transactional database normalized to 3NF with proper indexes on the foreign keys (`event_id`, `organizer_id`, `venue_code`) so joins stay fast, and only use summary views or denormalized caches if heavy reporting queries actually start slowing down.
+   Using a flat table like `event_booking_flat` means that all data can be read quickly using a simple `SELECT` statement. However, when trying to update data it can become very slow and risk prone. When trying to update a venue capacity or status, you have to lock the table and update many duplicate rows. There is also wasted space due to duplicate strings. When working with 3NF tables such as our 6 table design, data can be quickly and consistently updated. However, when trying to read data you have to perform `JOIN`s between tables (Tasks 5 and 6). Generally, in a real scenario the main transactional database would be kept in 3NF format with appropriate indexes on foreign keys (`event_id`, `organizer_id`, `venue_code`). If heavy queries are causing issues then summary views or denormalized caches would be used.
