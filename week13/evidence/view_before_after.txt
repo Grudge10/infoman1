@@ -1,0 +1,30 @@
+--------------
+SELECT appointment_id, appointment_date, reason, pet_name, owner_name, vet_name FROM pet_appointment_report ORDER BY appointment_date, appointment_id
+--------------
+
++----------------+------------------+---------------------+----------+----------------+----------------+
+| appointment_id | appointment_date | reason              | pet_name | owner_name     | vet_name       |
++----------------+------------------+---------------------+----------+----------------+----------------+
+|              1 | 2026-11-12       | Annual Checkup      | Bantay   | Maria Santos   | Dr. Reyes      |
+|              2 | 2026-11-18       | Vaccination Booster | Buddy    | Maria Santos   | Dr. Villanueva |
+|              3 | 2026-11-20       | Dental Cleaning     | Luna     | Carlos Mendoza | Dr. Reyes      |
++----------------+------------------+---------------------+----------+----------------+----------------+
+--------------
+UPDATE pet SET name = 'Buddy Jr.' WHERE microchip_number = 'MC-1001'
+--------------
+
+--------------
+SELECT appointment_id, appointment_date, reason, pet_name, owner_name, vet_name FROM pet_appointment_report ORDER BY appointment_date, appointment_id
+--------------
+
++----------------+------------------+---------------------+-----------+----------------+----------------+
+| appointment_id | appointment_date | reason              | pet_name  | owner_name     | vet_name       |
++----------------+------------------+---------------------+-----------+----------------+----------------+
+|              1 | 2026-11-12       | Annual Checkup      | Bantay    | Maria Santos   | Dr. Reyes      |
+|              2 | 2026-11-18       | Vaccination Booster | Buddy Jr. | Maria Santos   | Dr. Villanueva |
+|              3 | 2026-11-20       | Dental Cleaning     | Luna      | Carlos Mendoza | Dr. Reyes      |
++----------------+------------------+---------------------+-----------+----------------+----------------+
+--------------
+UPDATE pet SET name = 'Buddy' WHERE microchip_number = 'MC-1001'
+--------------
+

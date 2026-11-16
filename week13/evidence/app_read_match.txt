@@ -1,0 +1,21 @@
++----+------------------+--------+---------+------------------+----------+----------------+
+| id | microchip_number | name   | species | breed            | owner_id | owner_name     |
++----+------------------+--------+---------+------------------+----------+----------------+
+|  1 | MC-1001          | Buddy  | Dog     | Golden Retriever |        1 | Maria Santos   |
+|  2 | MC-1002          | Luna   | Cat     | Siamese          |        2 | Carlos Mendoza |
+|  3 | MC-1003          | Max    | Dog     | German Shepherd  |        2 | Carlos Mendoza |
+|  4 | MC-1004          | Milo   | Cat     | Persian          |        3 | Elena Cruz     |
+|  8 | MC-9001          | Bantay | Dog     | Aspin            |        1 | Maria Santos   |
++----+------------------+--------+---------+------------------+----------+----------------+
++----------------+------------------+---------------------+--------+------------------+----------+---------+----------------+----------------+------------------+
+| appointment_id | appointment_date | reason              | pet_id | microchip_number | pet_name | species | owner_name     | vet_name       | specialty        |
++----------------+------------------+---------------------+--------+------------------+----------+---------+----------------+----------------+------------------+
+|              1 | 2026-11-12       | Annual Checkup      |      8 | MC-9001          | Bantay   | Dog     | Maria Santos   | Dr. Reyes      | Surgery          |
+|              2 | 2026-11-18       | Vaccination Booster |      1 | MC-1001          | Buddy    | Dog     | Maria Santos   | Dr. Villanueva | General Practice |
+|              3 | 2026-11-20       | Dental Cleaning     |      2 | MC-1002          | Luna     | Cat     | Carlos Mendoza | Dr. Reyes      | Surgery          |
++----------------+------------------+---------------------+--------+------------------+----------+---------+----------------+----------------+------------------+
+
+--- WEBDEV2 GET http://localhost:8080/api/pets ---
+{"content":[{"breed":"Golden Retriever","id":1,"microchipNumber":"MC-1001","name":"Buddy","ownerId":1,"ownerName":"Maria Santos","species":"Dog"},{"breed":"Siamese","id":2,"microchipNumber":"MC-1002","name":"Luna","ownerId":2,"ownerName":"Carlos Mendoza","species":"Cat"},{"breed":"German Shepherd","id":3,"microchipNumber":"MC-1003","name":"Max","ownerId":2,"ownerName":"Carlos Mendoza","species":"Dog"},{"breed":"Persian","id":4,"microchipNumber":"MC-1004","name":"Milo","ownerId":3,"ownerName":"Elena Cruz","species":"Cat"},{"breed":"Aspin","id":8,"microchipNumber":"MC-9001","name":"Bantay","ownerId":1,"ownerName":"Maria Santos","species":"Dog"}],"empty":false,"first":true,"last":true,"number":0,"numberOfElements":5,"pageable":{"offset":0,"pageNumber":0,"pageSize":5,"paged":true,"sort":{"empty":false,"sorted":true,"unsorted":false},"unpaged":false},"size":5,"sort":{"empty":false,"sorted":true,"unsorted":false},"totalElements":5,"totalPages":1}
+--- WEBDEV2 GET http://localhost:8080/api/pets/1 ---
+{"breed":"Golden Retriever","id":1,"microchipNumber":"MC-1001","name":"Buddy","ownerId":1,"ownerName":"Maria Santos","species":"Dog"}

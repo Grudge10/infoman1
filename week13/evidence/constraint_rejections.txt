@@ -1,0 +1,15 @@
+--------------
+INSERT INTO pet (microchip_number, name, species, breed, owner_id) VALUES ('MC-1001', 'Twin', 'Dog', 'Poodle', 1)
+--------------
+
+ERROR 1062 (23000) at line 1: Duplicate entry 'MC-1001' for key 'pet.microchip_number'
+--------------
+INSERT INTO pet (microchip_number, name, species, breed, owner_id) VALUES ('MC-9999', 'Ghost', 'Cat', 'Tabby', 999)
+--------------
+
+ERROR 1452 (23000) at line 1: Cannot add or update a child row: a foreign key constraint fails (`vetclinic_f1_test`.`pet`, CONSTRAINT `fk_pet_owner` FOREIGN KEY (`owner_id`) REFERENCES `owner` (`id`))
+--------------
+INSERT INTO appointment (appointment_date, reason, fee, pet_id, vet_id) VALUES ('2026-11-25', 'Checkup', -50.00, 1, 1)
+--------------
+
+ERROR 3819 (HY000) at line 1: Check constraint 'chk_appointment_fee' is violated.
