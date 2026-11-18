@@ -1,0 +1,137 @@
+=== 1. Owner CRUD + 409 Delete Policy ===
+HTTP/1.1 201 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Location: http://localhost:8080/api/owners/7
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 18 Nov 2026 09:49:11 GMT
+
+{"id":7,"name":"Luzviminda Cruz","phone":"09178889999"}
+HTTP/1.1 200 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 18 Nov 2026 09:49:11 GMT
+
+{"id":7,"name":"Luzviminda R. Cruz","phone":"09178880000"}
+HTTP/1.1 409 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 18 Nov 2026 09:49:11 GMT
+
+{"status":409,"message":"Cannot delete owner because they still have registered pets","timestamp":1794995351187,"errors":null}
+=== 2. Pet CRUD (POST, PUT, PATCH, 400, 404, 409, DELETE 204) ===
+HTTP/1.1 201 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Location: http://localhost:8080/api/pets/15
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 18 Nov 2026 09:49:11 GMT
+
+{"breed":"Puspin","id":15,"microchipNumber":"MC-7001","name":"Tala","ownerId":7,"ownerName":"Luzviminda R. Cruz","species":"Cat"}
+HTTP/1.1 200 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 18 Nov 2026 09:49:11 GMT
+
+{"breed":"Short Hair","id":15,"microchipNumber":"MC-7001","name":"Tala","ownerId":7,"ownerName":"Luzviminda R. Cruz","species":"Cat"}
+HTTP/1.1 200 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 18 Nov 2026 09:49:11 GMT
+
+{"breed":"Domestic","id":15,"microchipNumber":"MC-7001","name":"Tala Updated","ownerId":7,"ownerName":"Luzviminda R. Cruz","species":"Cat"}
+HTTP/1.1 409 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 18 Nov 2026 09:49:11 GMT
+
+{"status":409,"message":"Microchip number already exists: MC-1001","timestamp":1794995351279,"errors":null}
+HTTP/1.1 400 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 18 Nov 2026 09:49:11 GMT
+Connection: close
+
+{"status":400,"message":"Microchip number, name, and species are required for PUT","timestamp":1794995351299,"errors":null}
+HTTP/1.1 404 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 18 Nov 2026 09:49:11 GMT
+
+{"status":404,"message":"Pet not found with id: 999","timestamp":1794995351318,"errors":null}
+HTTP/1.1 409 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 18 Nov 2026 09:49:11 GMT
+
+{"status":409,"message":"Cannot delete pet because it has existing appointments","timestamp":1794995351338,"errors":null}
+HTTP/1.1 204 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Date: Wed, 18 Nov 2026 09:49:11 GMT
+
+HTTP/1.1 204 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Date: Wed, 18 Nov 2026 09:49:11 GMT
+
+=== 3. Atomic Booking Post-Write Rollback (petId=999 after vet decrement) ===
++----+----------------+-----------------+
+| id | name           | available_slots |
++----+----------------+-----------------+
+|  2 | Dr. Villanueva |               3 |
++----+----------------+-----------------+
++------------+
+| appt_count |
++------------+
+|          4 |
++------------+
+HTTP/1.1 404 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 18 Nov 2026 09:49:11 GMT
+
+{"status":404,"message":"Pet not found with id: 999","timestamp":1794995351425,"errors":null}
++----+----------------+-----------------+
+| id | name           | available_slots |
++----+----------------+-----------------+
+|  2 | Dr. Villanueva |               3 |
++----+----------------+-----------------+
++------------+
+| appt_count |
++------------+
+|          4 |
++------------+
