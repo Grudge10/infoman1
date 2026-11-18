@@ -1,0 +1,140 @@
+--------------
+-- Week 16 (F4): Report verification, outer-join vs WHERE check, constraints, and EXPLAIN
+--------------
+
+--------------
+-- Prerequisites: vetclinic_f4_test created from week13/schema.sql, seed.sql, views.sql, week14/migration_week14.sql, week15/migration_week15.sql
+--------------
+
+--------------
+-- Execute with: mysql -uroot -h127.0.0.1 -P3307 --force -v -t vetclinic_f4_test < week16/verification.sql
+--------------
+
+--------------
+-- 1. View report output vs expected base rows
+--------------
+
+--------------
+SELECT appointment_id, appointment_date, reason, pet_name, species, owner_name, vet_name, specialty
+FROM pet_appointment_report
+ORDER BY appointment_date, appointment_id
+--------------
+
++----------------+------------------+---------------------+----------+---------+----------------+----------------+------------------+
+| appointment_id | appointment_date | reason              | pet_name | species | owner_name     | vet_name       | specialty        |
++----------------+------------------+---------------------+----------+---------+----------------+----------------+------------------+
+|              1 | 2026-11-12       | Annual Checkup      | Bantay   | Dog     | Maria Santos   | Dr. Reyes      | Surgery          |
+|              2 | 2026-11-18       | Vaccination Booster | Buddy    | Dog     | Maria Santos   | Dr. Villanueva | General Practice |
+|              3 | 2026-11-20       | Dental Cleaning     | Luna     | Cat     | Carlos Mendoza | Dr. Reyes      | Surgery          |
++----------------+------------------+---------------------+----------+---------+----------------+----------------+------------------+
+--------------
+-- 2. One-to-many join cardinality: Maria Santos owns Buddy (1 appt) and Bantay (1 appt), Carlos owns Luna (1 appt) and Max (0 appts), Elena owns Milo (0 appts)
+--------------
+
+--------------
+SELECT o.id,
+       o.name AS owner_name,
+       COUNT(*) AS raw_joined_rows,
+       COUNT(DISTINCT p.id) AS distinct_pets,
+       COUNT(a.id) AS total_appointments
+FROM owner o
+LEFT JOIN pet p ON p.owner_id = o.id
+LEFT JOIN appointment a ON a.pet_id = p.id
+GROUP BY o.id, o.name
+ORDER BY o.id
+--------------
+
++----+----------------+-----------------+---------------+--------------------+
+| id | owner_name     | raw_joined_rows | distinct_pets | total_appointments |
++----+----------------+-----------------+---------------+--------------------+
+|  1 | Maria Santos   |               2 |             2 |                  2 |
+|  2 | Carlos Mendoza |               2 |             2 |                  1 |
+|  3 | Elena Cruz     |               1 |             1 |                  0 |
++----+----------------+-----------------+---------------+--------------------+
+--------------
+-- 3. Filter in ON preserves owners with 0 matching appointments >= 700.00 (Elena = 0 instead of vanishing)
+--------------
+
+--------------
+SELECT o.id,
+       o.name AS owner_name,
+       COUNT(a.id) AS high_fee_appointments
+FROM owner o
+LEFT JOIN pet p ON p.owner_id = o.id
+LEFT JOIN appointment a ON a.pet_id = p.id AND a.fee >= 700.00
+GROUP BY o.id, o.name
+ORDER BY o.id
+--------------
+
++----+----------------+-----------------------+
+| id | owner_name     | high_fee_appointments |
++----+----------------+-----------------------+
+|  1 | Maria Santos   |                     1 |
+|  2 | Carlos Mendoza |                     1 |
+|  3 | Elena Cruz     |                     0 |
++----+----------------+-----------------------+
+--------------
+-- Contrast: putting child filter in WHERE turns LEFT JOIN into an inner filter and drops Elena
+--------------
+
+--------------
+SELECT o.id,
+       o.name AS owner_name,
+       COUNT(a.id) AS high_fee_appointments
+FROM owner o
+LEFT JOIN pet p ON p.owner_id = o.id
+LEFT JOIN appointment a ON a.pet_id = p.id
+WHERE a.fee >= 700.00
+GROUP BY o.id, o.name
+ORDER BY o.id
+--------------
+
++----+----------------+-----------------------+
+| id | owner_name     | high_fee_appointments |
++----+----------------+-----------------------+
+|  1 | Maria Santos   |                     1 |
+|  2 | Carlos Mendoza |                     1 |
++----+----------------+-----------------------+
+--------------
+-- 4. Real MySQL constraint rejections (negative checks)
+--------------
+
+--------------
+INSERT INTO pet (microchip_number, name, species, breed, owner_id)
+VALUES ('MC-1001', 'DuplicateChip', 'Dog', 'Aspin', 1)
+--------------
+
+ERROR 1062 (23000) at line 44: Duplicate entry 'MC-1001' for key 'pet.microchip_number'
+--------------
+INSERT INTO pet (microchip_number, name, species, breed, owner_id)
+VALUES ('MC-8888', 'BadOwner', 'Cat', 'Siamese', 999)
+--------------
+
+ERROR 1452 (23000) at line 47: Cannot add or update a child row: a foreign key constraint fails (`vetclinic_f4_test`.`pet`, CONSTRAINT `fk_pet_owner` FOREIGN KEY (`owner_id`) REFERENCES `owner` (`id`))
+--------------
+INSERT INTO appointment (appointment_date, reason, fee, pet_id, vet_id)
+VALUES ('2026-12-20', 'Negative Fee', -10.00, 1, 1)
+--------------
+
+ERROR 3819 (HY000) at line 50: Check constraint 'chk_appointment_fee' is violated.
+--------------
+-- 5. EXPLAIN plan on owner/pet/appointment report join
+--------------
+
+--------------
+EXPLAIN
+SELECT o.id, o.name, COUNT(DISTINCT p.id) AS pets, COUNT(a.id) AS appointments
+FROM owner o
+LEFT JOIN pet p ON p.owner_id = o.id
+LEFT JOIN appointment a ON a.pet_id = p.id AND a.fee >= 700.00
+GROUP BY o.id, o.name
+ORDER BY o.id
+--------------
+
++----+-------------+-------+------------+------+-------------------------+-------------------------+---------+------------------------+------+----------+----------------+
+| id | select_type | table | partitions | type | possible_keys           | key                     | key_len | ref                    | rows | filtered | Extra          |
++----+-------------+-------+------------+------+-------------------------+-------------------------+---------+------------------------+------+----------+----------------+
+|  1 | SIMPLE      | o     | NULL       | ALL  | NULL                    | NULL                    | NULL    | NULL                   |    3 |   100.00 | Using filesort |
+|  1 | SIMPLE      | p     | NULL       | ref  | fk_pet_owner            | fk_pet_owner            | 9       | vetclinic_f4_test.o.id |    1 |   100.00 | Using index    |
+|  1 | SIMPLE      | a     | NULL       | ref  | uq_appointment_pet_date | uq_appointment_pet_date | 8       | vetclinic_f4_test.p.id |    1 |   100.00 | Using where    |
++----+-------------+-------+------------+------+-------------------------+-------------------------+---------+------------------------+------+----------+----------------+
