@@ -1,0 +1,40 @@
+=== UAT-1: Health + Anonymous Denied ===
+{"database":"UP","status":"UP"}
+HTTP_STATUS:200
+
+{"status":401,"message":"Authentication required","timestamp":1794996540179,"errors":null}
+HTTP_STATUS:401
+
+=== UAT-2: READER Login & Denial ===
+{"username":"clinic_viewer","role":"READER"}
+HTTP_STATUS:200
+
+{"status":403,"message":"Forbidden: insufficient role or invalid CSRF token","timestamp":1794996540554,"errors":null}
+HTTP_STATUS:403
+
+=== UAT-3: MANAGER CRUD + Filter/Pagination ===
+{"username":"clinic_manager","role":"MANAGER"}
+HTTP_STATUS:200
+
+{"breed":"Corgi","id":6,"microchipNumber":"MC-F5REL","name":"ReleasePup","ownerId":1,"ownerName":"Maria Santos","species":"Dog"}
+HTTP_STATUS:201
+
+{"content":[{"breed":"Golden Retriever","id":1,"microchipNumber":"MC-1001","name":"Buddy","ownerId":1,"ownerName":"Maria Santos","species":"Dog"},{"breed":"German Shepherd","id":3,"microchipNumber":"MC-1003","name":"Max","ownerId":2,"ownerName":"Carlos Mendoza","species":"Dog"},{"breed":"Aspin","id":5,"microchipNumber":"MC-1005","name":"Bantay","ownerId":1,"ownerName":"Maria Santos","species":"Dog"},{"breed":"Corgi","id":6,"microchipNumber":"MC-F5REL","name":"ReleasePup","ownerId":1,"ownerName":"Maria Santos","species":"Dog"}],"empty":false,"first":true,"last":true,"number":0,"numberOfElements":4,"pageable":{"offset":0,"pageNumber":0,"pageSize":5,"paged":true,"sort":{"empty":false,"sorted":true,"unsorted":false},"unpaged":false},"size":5,"sort":{"empty":false,"sorted":true,"unsorted":false},"totalElements":4,"totalPages":1}
+HTTP_STATUS:200
+
+=== UAT-4: Atomic Booking Commit & Rollback on Restored Target ===
+{"id":4,"appointmentDate":"2026-12-21","reason":"Release UAT Check","fee":600.00,"petId":4,"petName":"Milo","ownerName":"Elena Cruz","vetId":1,"vetName":"Dr. Reyes"}
+HTTP_STATUS:201
+
+{"status":404,"message":"Pet not found with id: 9999","timestamp":1794996540918,"errors":null}
+HTTP_STATUS:404
+
+[{"id":1,"name":"Dr. Reyes","specialty":"Surgery","availableSlots":2},{"id":2,"name":"Dr. Villanueva","specialty":"General Practice","availableSlots":3},{"id":3,"name":"Dr. Ramos","specialty":"Dermatology","availableSlots":3}]
+HTTP_STATUS:200
+
+=== UAT-5: Logout ===
+
+HTTP_STATUS:204
+
+{"status":401,"message":"Authentication required","timestamp":1794996540971,"errors":null}
+HTTP_STATUS:401
