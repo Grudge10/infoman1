@@ -1,0 +1,14 @@
++---------------+-----------------+---------------+---------+
+| USER          | HOST            | DB            | COMMAND |
++---------------+-----------------+---------------+---------+
+| vetclinic_app | localhost:59289 | webdev2_week8 | Sleep   |
+| vetclinic_app | localhost:59281 | webdev2_week8 | Sleep   |
+| vetclinic_app | localhost:59282 | webdev2_week8 | Sleep   |
+| vetclinic_app | localhost:59283 | webdev2_week8 | Sleep   |
+| vetclinic_app | localhost:59284 | webdev2_week8 | Sleep   |
+| vetclinic_app | localhost:59285 | webdev2_week8 | Sleep   |
+| vetclinic_app | localhost:59286 | webdev2_week8 | Sleep   |
+| vetclinic_app | localhost:59287 | webdev2_week8 | Sleep   |
+| vetclinic_app | localhost:59280 | webdev2_week8 | Sleep   |
+| vetclinic_app | localhost:59288 | webdev2_week8 | Sleep   |
++---------------+-----------------+---------------+---------+

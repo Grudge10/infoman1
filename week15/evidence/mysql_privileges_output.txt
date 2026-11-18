@@ -1,0 +1,70 @@
+=== 1. Provisioned Accounts & View Definition ===
++------------------------------------------------------------------------------------------+
+| Grants for vetclinic_app@localhost                                                       |
++------------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `vetclinic_app`@`localhost`                                        |
+| GRANT SELECT, INSERT, UPDATE, DELETE ON `webdev2_week8`.* TO `vetclinic_app`@`localhost` |
++------------------------------------------------------------------------------------------+
++--------------------------------------------------------------------------------------------+
+| Grants for vetclinic_report@localhost                                                      |
++--------------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `vetclinic_report`@`localhost`                                       |
+| GRANT SELECT ON `webdev2_week8`.`pet_appointment_report` TO `vetclinic_report`@`localhost` |
++--------------------------------------------------------------------------------------------+
++----+----------------+---------+---------+---------------+
+| id | username       | role    | enabled | bcrypt_prefix |
++----+----------------+---------+---------+---------------+
+|  3 | clinic_viewer  | READER  |        | $2a$10$       |
+|  4 | clinic_manager | MANAGER |        | $2a$10$       |
++----+----------------+---------+---------+---------------+
+*************************** 1. row ***************************
+                View: pet_appointment_report
+         Create View: CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `pet_appointment_report` AS select `a`.`id` AS `appointment_id`,`a`.`appointment_date` AS `appointment_date`,`a`.`reason` AS `reason`,`p`.`id` AS `pet_id`,`p`.`microchip_number` AS `microchip_number`,`p`.`name` AS `pet_name`,`p`.`species` AS `species`,`o`.`name` AS `owner_name`,`v`.`name` AS `vet_name`,`v`.`specialty` AS `specialty` from (((`appointment` `a` join `pet` `p` on((`p`.`id` = `a`.`pet_id`))) left join `owner` `o` on((`o`.`id` = `p`.`owner_id`))) join `veterinarian` `v` on((`v`.`id` = `a`.`vet_id`)))
+character_set_client: utf8mb4
+collation_connection: utf8mb4_0900_ai_ci
+=== 2. Disposable DB Setup for DDL Denial Test ===
++-------------------------+-------------------------+---------------+
+| USER()                  | CURRENT_USER()          | DATABASE()    |
++-------------------------+-------------------------+---------------+
+| vetclinic_app@localhost | vetclinic_app@localhost | webdev2_week8 |
++-------------------------+-------------------------+---------------+
++-----------+
+| pet_count |
++-----------+
+|         5 |
++-----------+
+ERROR 1142 (42000) at line 2: CREATE command denied to user 'vetclinic_app'@'localhost' for table 'unauthorized_test'
+=== 3. Report Identity Read, Base Table Denial, REVOKE Denial, and Restore ===
++----------------------------+----------------------------+---------------+
+| USER()                     | CURRENT_USER()             | DATABASE()    |
++----------------------------+----------------------------+---------------+
+| vetclinic_report@localhost | vetclinic_report@localhost | webdev2_week8 |
++----------------------------+----------------------------+---------------+
++--------------------------------------------------------------------------------------------+
+| Grants for vetclinic_report@localhost                                                      |
++--------------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `vetclinic_report`@`localhost`                                       |
+| GRANT SELECT ON `webdev2_week8`.`pet_appointment_report` TO `vetclinic_report`@`localhost` |
++--------------------------------------------------------------------------------------------+
++----------------+------------------+----------+----------------+----------------+
+| appointment_id | appointment_date | pet_name | owner_name     | vet_name       |
++----------------+------------------+----------+----------------+----------------+
+|              1 | 2026-11-12       | Bantay   | Maria Santos   | Dr. Reyes      |
+|              2 | 2026-11-18       | Buddy    | Maria Santos   | Dr. Villanueva |
+|              3 | 2026-11-20       | Luna     | Carlos Mendoza | Dr. Reyes      |
++----------------+------------------+----------+----------------+----------------+
+ERROR 1142 (42000) at line 2: SELECT command denied to user 'vetclinic_report'@'localhost' for table 'owner'
+ERROR 1142 (42000) at line 2: INSERT command denied to user 'vetclinic_report'@'localhost' for table 'owner'
+--- Admin revoking SELECT on pet_appointment_report ---
+Grants for vetclinic_report@localhost
+GRANT USAGE ON *.* TO `vetclinic_report`@`localhost`
+ERROR 1044 (42000): Access denied for user 'vetclinic_report'@'localhost' to database 'webdev2_week8'
+--- Admin restoring SELECT on pet_appointment_report ---
+Grants for vetclinic_report@localhost
+GRANT USAGE ON *.* TO `vetclinic_report`@`localhost`
+GRANT SELECT ON `webdev2_week8`.`pet_appointment_report` TO `vetclinic_report`@`localhost`
++----------------------+
+| restored_report_rows |
++----------------------+
+|                    3 |
++----------------------+
