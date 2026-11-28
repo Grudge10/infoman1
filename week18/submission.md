@@ -14,7 +14,7 @@
 | Timestamp | Database & Integration Section Covered | Evidence / Scripts Shown |
 |---|---|---|
 | `<00:00>` | Identity, Vet Clinic problem, [`week18/release/`](release/), `webdev2` branch `finals` | [setup.md](setup.md), [submission.md](submission.md) |
-| `<01:30>` | ERD, 3NF functional dependencies (`owner`, `veterinarian`, `pet`, `appointment`), PK/FK/`CHECK` & `409` delete policy | [release/01_schema.sql](release/01_schema.sql), [../week13/lecture.md](../week13/lecture.md) |
+| `<01:30>` | ERD, 3NF functional dependencies (`owner`, `veterinarian`, `pet`, `appointment`), PK/FK/`CHECK` & `409` delete policy | [lecture.md](lecture.md), [release/01_schema.sql](release/01_schema.sql) |
 | `<03:00>` | Persisted CRUD (`owner`, `pet`), invalid/duplicate rejections (`1062`/`1452`/`3819`), `pet_appointment_report` view + `ON` vs `WHERE` | [../week16/verification.sql](../week16/verification.sql), [evidence/verification_output.txt](evidence/verification_output.txt) |
 | `<05:00>` | Atomic booking (`veterinarian.available_slots` + `appointment`) commit, post-write failure rollback & `SAVEPOINT after_slot_lock` | [../week14/transactions.sql](../week14/transactions.sql), [evidence/sql_transactions_output.txt](evidence/sql_transactions_output.txt) |
 | `<07:00>` | Restricted `vetclinic_app@localhost` (`ddl-auto=validate`), `vetclinic_report@localhost` `GRANT`/`REVOKE`/`RESTORE` | [release/04_access_control.sql](release/04_access_control.sql), [evidence/mysql_privileges_output.txt](evidence/mysql_privileges_output.txt) |

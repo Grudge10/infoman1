@@ -6,6 +6,21 @@
 
 ## 1. Relational Schema, Functional Dependencies, and Normalization (`<01:30>`)
 
+```text
+owner (id PK, name NOT NULL, phone)
+  | 1
+  | 0..* (fk_pet_owner, ON DELETE RESTRICT, owner_id nullable)
+pet (id PK, microchip_number UNIQUE NOT NULL, name NOT NULL, species NOT NULL, breed, owner_id FK NULL)
+  | 1
+  | 0..* (fk_appointment_pet, uq_appointment_pet_date (pet_id, appointment_date))
+appointment (id PK, appointment_date NOT NULL, reason NOT NULL, fee DECIMAL(8,2) CHECK >= 0.00, pet_id FK NOT NULL, vet_id FK NOT NULL)
+  | 0..*
+  | 1 (fk_appointment_vet)
+veterinarian (id PK, name NOT NULL, specialty, available_slots INT DEFAULT 3 CHECK >= 0)
+
+clinic_account (id PK, username UNIQUE NOT NULL, password_hash NOT NULL, role CHECK IN ('READER','MANAGER'), enabled BIT(1))
+```
+
 The Vet Clinic database has 4 normalized InnoDB tables (`owner`, `veterinarian`, `pet`, and `appointment`), plus a `clinic_account` table to allow users to log in using Spring Security (`week18/release/01_schema.sql`).
 
 Functional Dependencies & 3NF: `owner.id -> name, phone` and `pet.id -> microchip_number, name, species, breed, owner_id`. Including `owner.phone` in `pet` or `appointment` tables would cause repetition and update errors when it was changed. By having `owner` as a separate table and a foreign key (`fk_pet_owner` with `ON DELETE RESTRICT` constraints) in `pet` (with `409 Conflict` validation in `OwnerService.delete`), owner data is consolidated. However, in order to allow pets with no owner (stray pets), `owner_id` in `pet` can be `NULL`.
